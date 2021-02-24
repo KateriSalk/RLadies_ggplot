@@ -1,0 +1,181 @@
+---
+title: "RLadies ggplot Basics Tutorial"
+author: "Kateri Salk"
+date: "2/23/2021"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Introduction
+
+Welcome to an R Markdown document. If you're fairly new to R, this might look different than you are used to. The benefit of R Markdown is that it has the ability to contain both code (like you would see in a script) and text. 
+
+This tutorial focuses on air quality data in California. Data were collected from [the EPA air quality database](https://www.epa.gov/outdoor-air-quality-data/download-daily-data). California experienced [widespread wildfires](https://www.fire.ca.gov/incidents/) in 2020. This dataset focuses on two locations: one near the epicenter of wildfire activity and one relatively far from fire activity.
+
+
+## Setup
+
+For this tutorial, we will use the ggplot package. Check your "packages" tab in your navigator panel. If ggplot is not listed in the package list, you will need to install it (below). After installing the package if needed, load the package. 
+
+We will also upload our dataset with a relative file path.
+
+Here is our first code "chunk": 
+
+```{r}
+
+#install.packages("ggplot2")
+library(ggplot2)
+
+PM25 <- read.csv("./Data/EPA_CA_PM25_2020.csv")
+
+
+dim(PM25)
+colnames(PM25)
+
+```
+
+## Histograms
+
+Histogram: Show distributions of a single continuous variable. 
+
+Info on Air Quality Index (AQI): https://www.airnow.gov/aqi/aqi-basics/
+
+Adjustments (add notes here!): 
+
+* axis labels
+* theme
+
+```{r}
+
+# start with your overarching "ggplot" layer. Includes dataset and overall aesthetics.
+ggplot(PM25, aes(x = Daily.Mean.PM2.5.Concentration)) +
+  # next add layer specifying the type of graph. Always need to add another layer.
+  geom_histogram()
+
+# make your own with AQI values
+ggplot(PM25, aes(x = DAILY_AQI_VALUE)) +
+  geom_histogram()
+
+
+# now, let's adjust the graph
+
+ggplot(PM25, aes(x = DAILY_AQI_VALUE)) +
+  geom_histogram() +
+  labs(x = "Daily AQI Value", y = "Count", title = "PM 2.5 AQI Values in California") +
+  theme_classic()
+
+
+
+```
+
+## Scatterplots
+
+Scatterplot: show two continuous variables
+
+Adjustments (add notes here!): 
+
+* color: named colors 
+* transparency
+
+```{r}
+
+ggplot(PM25, aes(x = Date, y = DAILY_AQI_VALUE)) +
+  geom_point(color = "darkgreen", alpha = 0.7) +
+  theme_classic()
+
+class(PM25$Date)
+PM25$Date <- as.Date(PM25$Date, format = "%m/%d/%Y")
+
+```
+
+
+### Adding color aesthetics
+
+Adjustments: 
+
+* legend placement
+* color choice
+
+```{r}
+ggplot(PM25, aes(x = Date, y = DAILY_AQI_VALUE, color = Site.Name)) +
+  geom_point(alpha = 0.7) +
+  theme_classic() +
+  scale_color_manual(values = c("magenta", "steelblue")) +
+  theme(legend.position = "top") +
+  labs(color = "Site Name")
+
+```
+
+
+
+### Adding facets
+
+Adjustments: 
+
+* rows vs. columns
+
+facet_grid()
+
+```{r}
+ggplot(PM25, aes(x = Date, y = DAILY_AQI_VALUE, color = Site.Name)) +
+  geom_point() +
+  facet_wrap(vars(Site.Name), nrow = 2) +
+  theme_classic() 
+```
+
+### Try your own
+
+Try making your own scatterplot. This time, plot the PM 2.5 concentration on the x axis and the AQI value on the y axis. We can investigate how these values relate. 
+
+Additional items to adjust: 
+
+* axis labels
+* theme
+* transparency
+
+```{r}
+
+ggplot(PM25, aes(x = Daily.Mean.PM2.5.Concentration, y = DAILY_AQI_VALUE)) +
+  geom_point(alpha = 0.8) +
+  theme_bw()
+
+```
+
+Next, we will explore one more adjustment: adding a line of best fit. 
+
+Adjustments: 
+
+* line of best fit (geom_smooth)
+
+```{r}
+
+ggplot(PM25, aes(x = Daily.Mean.PM2.5.Concentration, y = DAILY_AQI_VALUE)) +
+  geom_smooth(method = "lm", color = "black") +
+  geom_point(alpha = 0.8) +
+  theme_bw()
+
+```
+
+
+## Boxplots and violin plots
+
+Boxplot and violin plot: show distribution of a continuous variable. Can be split up based on a categorical variable.
+
+Adjustments: 
+
+* Fill color
+* adding lines (geom_vline, geom_hline, geom_abline)
+
+
+```{r}
+
+ggplot(PM25, aes(y = DAILY_AQI_VALUE, x = CBSA_NAME, fill = CBSA_NAME)) +
+  #geom_boxplot() +
+  geom_violin() +
+  geom_hline(yintercept = 50, lty = 10) +
+  geom_hline(yintercept = 100, lty = 2) +
+  theme_classic()
+
+```
+
